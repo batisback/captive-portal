@@ -48,6 +48,7 @@
         let timeLeft = 0; // Initialize timeLeft
         let interval; // Declare interval variable
         let endTime; // Declare endTime variable
+        let startTime; // Declare startTime variable
 
         // Function to format the time as HH:MM:SS
         function formatTime(seconds) {
@@ -62,11 +63,16 @@
             if (duration) {
                 // Set the end time for the timer
                 timeLeft = parseInt(duration, 10); // Set timeLeft based on user's choice
-                endTime = Date.now() + timeLeft * 1000; // Calculate end time
-                localStorage.setItem('endTime', endTime); // Store end time in localStorage
+                startTime = new Date(); // Get current date and time
+                endTime = new Date(startTime.getTime() + timeLeft * 1000); // Calculate end time
+
+                // Store start and end times in localStorage
+                localStorage.setItem('startTime', startTime.toISOString()); // Store start time
+                localStorage.setItem('endTime', endTime.toISOString()); // Store end time
                 localStorage.setItem('duration', duration); // Store duration in localStorage
+
                 document.getElementById("durationSelect").value = duration; // Keep the selected value in the drop-down
-                displayDurationInfo(timeLeft); // Display start and end times
+                displayDurationInfo(startTime, endTime); // Display start and end times
                 startTimer(); // Start the timer
             }
         }
@@ -75,12 +81,13 @@
         function startTimer() {
             clearInterval(interval); // Clear any existing timer
             interval = setInterval(() => {
-                timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000)); // Calculate remaining time
+                timeLeft = Math.max(0, Math.floor((new Date(localStorage.getItem('endTime')).getTime() - Date.now()) / 1000)); // Calculate remaining time
 
                 if (timeLeft <= 0) {
                     document.getElementById("timer").innerHTML = "Expired";
                     clearInterval(interval);
                     localStorage.removeItem('duration'); // Clear duration from localStorage when expired
+                    localStorage.removeItem('startTime'); // Clear start time from localStorage
                     localStorage.removeItem('endTime'); // Clear end time from localStorage
                 } else {
                     document.getElementById("timer").innerHTML = formatTime(timeLeft);
@@ -89,14 +96,11 @@
         }
 
         // Function to display start and end date/time
-        function displayDurationInfo(duration) {
-            const startTime = new Date(); // Get the current date and time
-            const endTime = new Date(startTime.getTime() + duration * 1000); // Calculate end time
-
+        function displayDurationInfo(startTime, endTime) {
             // Format the date and time
             const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            const startTimeFormatted = startTime.toLocaleString('en-US', options);
-            const endTimeFormatted = endTime.toLocaleString('en-US', options);
+            const startTimeFormatted = new Date(startTime).toLocaleString('en-US', options);
+            const endTimeFormatted = new Date(endTime).toLocaleString('en-US', options);
 
             // Display start and end times
             document.getElementById("durationInfo").innerHTML = `
@@ -108,14 +112,16 @@
         // Function to load the timer state from localStorage
         function loadTimer() {
             const storedEndTime = localStorage.getItem('endTime');
+            const storedStartTime = localStorage.getItem('startTime');
             const storedDuration = localStorage.getItem('duration');
             if (storedEndTime) {
-                endTime = parseInt(storedEndTime, 10); // Retrieve and parse the stored end time
-                timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000)); // Calculate remaining time
+                endTime = new Date(storedEndTime); // Retrieve stored end time
+                startTime = new Date(storedStartTime); // Retrieve stored start time
+                timeLeft = Math.max(0, Math.floor((endTime.getTime() - Date.now()) / 1000)); // Calculate remaining time
                 document.getElementById("timer").innerHTML = formatTime(timeLeft);
+                document.getElementById("durationSelect").value = storedDuration; // Keep the selected value in the drop-down
+                displayDurationInfo(startTime, endTime); // Display stored start and end times
                 if (timeLeft > 0) {
-                    document.getElementById("durationSelect").value = storedDuration; // Keep the selected value in the drop-down
-                    displayDurationInfo(timeLeft); // Display start and end times
                     startTimer(); // Start the timer with the loaded duration
                 } else {
                     document.getElementById("timer").innerHTML = "Expired"; // If time has expired
