@@ -42,6 +42,7 @@
     <script>
         let timeLeft = 0; // Initialize timeLeft
         let interval; // Declare interval variable
+        let endTime; // Declare endTime variable
 
         // Function to format the time as HH:MM:SS
         function formatTime(seconds) {
@@ -53,16 +54,19 @@
 
         // Function to set the duration based on user choice
         function setDuration(duration) {
-            timeLeft = duration; // Set timeLeft based on user's choice
-            localStorage.setItem('duration', duration); // Store duration in localStorage
-            startTimer(); // Start the timer
+            if (duration) {
+                // Set the end time for the timer
+                timeLeft = parseInt(duration, 10); // Set timeLeft based on user's choice
+                endTime = Date.now() + timeLeft * 1000; // Calculate end time
+                localStorage.setItem('endTime', endTime); // Store end time in localStorage
+                localStorage.setItem('duration', duration); // Store duration in localStorage
+                startTimer(); // Start the timer
+            }
         }
 
         // Function to start the countdown timer
         function startTimer() {
             clearInterval(interval); // Clear any existing timer
-            const endTime = Date.now() + timeLeft * 1000; // Calculate end time
-
             interval = setInterval(() => {
                 timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000)); // Calculate remaining time
 
@@ -70,6 +74,7 @@
                     document.getElementById("timer").innerHTML = "Expired";
                     clearInterval(interval);
                     localStorage.removeItem('duration'); // Clear duration from localStorage when expired
+                    localStorage.removeItem('endTime'); // Clear end time from localStorage
                 } else {
                     document.getElementById("timer").innerHTML = formatTime(timeLeft);
                 }
@@ -78,11 +83,17 @@
 
         // Function to load the timer state from localStorage
         function loadTimer() {
+            const storedEndTime = localStorage.getItem('endTime');
             const storedDuration = localStorage.getItem('duration');
-            if (storedDuration) {
-                timeLeft = parseInt(storedDuration, 10); // Retrieve and parse the stored duration
+            if (storedEndTime) {
+                endTime = parseInt(storedEndTime, 10); // Retrieve and parse the stored end time
+                timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000)); // Calculate remaining time
                 document.getElementById("timer").innerHTML = formatTime(timeLeft);
-                startTimer(); // Start the timer with the loaded duration
+                if (timeLeft > 0) {
+                    startTimer(); // Start the timer with the loaded duration
+                } else {
+                    document.getElementById("timer").innerHTML = "Expired"; // If time has expired
+                }
             }
         }
 
