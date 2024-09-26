@@ -20,18 +20,28 @@
             margin-top: 20px;
             color: red;
         }
+        .duration-button {
+            margin: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Welcome to SB Co</h1>
-        <p>Your internet access expires in:</p>
-        <div id="timer">60:00</div>
+        <p>Select your internet access duration:</p>
+        <div>
+            <button class="duration-button" onclick="setDuration(3600)">1 Hour</button>
+            <button class="duration-button" onclick="setDuration(10800)">3 Hours</button>
+            <button class="duration-button" onclick="setDuration(21600)">6 Hours</button>
+            <button class="duration-button" onclick="setDuration(43200)">12 Hours</button>
+        </div>
+        <div id="timer">00:00</div>
     </div>
 
     <script>
-        // Set the initial countdown time (in seconds)
-        let timeLeft = 60 * 60; // 60 minutes * 60 seconds = 3600 seconds
+        let timeLeft = 0; // Initialize timeLeft
 
         // Function to format the time as MM:SS
         function formatTime(seconds) {
@@ -40,18 +50,27 @@
             return minutes.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
         }
 
-        // Update the timer every second
-        setInterval(() => {
-            timeLeft--;
+        // Function to set the duration based on user choice
+        function setDuration(duration) {
+            timeLeft = duration; // Set timeLeft based on user's choice
+            document.getElementById("timer").innerHTML = formatTime(timeLeft);
+            startTimer(); // Start the timer
+        }
 
-            // If the time runs out, stop the countdown
-            if (timeLeft < 0) {
-                document.getElementById("timer").innerHTML = "Expired";
-                clearInterval();
-            } else {
-                document.getElementById("timer").innerHTML = formatTime(timeLeft);
-            }
-        }, 1000);
+        // Function to start the countdown timer
+        function startTimer() {
+            clearInterval(); // Clear any existing timer
+            const interval = setInterval(() => {
+                timeLeft--;
+
+                if (timeLeft < 0) {
+                    document.getElementById("timer").innerHTML = "Expired";
+                    clearInterval(interval);
+                } else {
+                    document.getElementById("timer").innerHTML = formatTime(timeLeft);
+                }
+            }, 1000);
+        }
     </script>
 </body>
 </html>
