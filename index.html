@@ -20,6 +20,10 @@
             margin-top: 20px;
             color: red;
         }
+        #durationInfo {
+            margin-top: 20px;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -28,7 +32,7 @@
         <p>Select your internet access duration:</p>
         <div>
             <select id="durationSelect" onchange="setDuration(this.value)">
-                <option value="" disabled selected>Select Duration</option>
+                <option value="" disabled>Select Duration</option>
                 <option value="3600">1 Hour</option>
                 <option value="10800">3 Hours</option>
                 <option value="21600">6 Hours</option>
@@ -37,6 +41,7 @@
             </select>
         </div>
         <div id="timer">00:00:00</div> <!-- Changed to HH:MM:SS format -->
+        <div id="durationInfo"></div> <!-- For displaying start and end times -->
     </div>
 
     <script>
@@ -60,6 +65,8 @@
                 endTime = Date.now() + timeLeft * 1000; // Calculate end time
                 localStorage.setItem('endTime', endTime); // Store end time in localStorage
                 localStorage.setItem('duration', duration); // Store duration in localStorage
+                document.getElementById("durationSelect").value = duration; // Keep the selected value in the drop-down
+                displayDurationInfo(timeLeft); // Display start and end times
                 startTimer(); // Start the timer
             }
         }
@@ -81,6 +88,23 @@
             }, 1000);
         }
 
+        // Function to display start and end date/time
+        function displayDurationInfo(duration) {
+            const startTime = new Date(); // Get the current date and time
+            const endTime = new Date(startTime.getTime() + duration * 1000); // Calculate end time
+
+            // Format the date and time
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const startTimeFormatted = startTime.toLocaleString('en-US', options);
+            const endTimeFormatted = endTime.toLocaleString('en-US', options);
+
+            // Display start and end times
+            document.getElementById("durationInfo").innerHTML = `
+                <p>Start Time: ${startTimeFormatted}</p>
+                <p>End Time: ${endTimeFormatted}</p>
+            `;
+        }
+
         // Function to load the timer state from localStorage
         function loadTimer() {
             const storedEndTime = localStorage.getItem('endTime');
@@ -90,6 +114,8 @@
                 timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000)); // Calculate remaining time
                 document.getElementById("timer").innerHTML = formatTime(timeLeft);
                 if (timeLeft > 0) {
+                    document.getElementById("durationSelect").value = storedDuration; // Keep the selected value in the drop-down
+                    displayDurationInfo(timeLeft); // Display start and end times
                     startTimer(); // Start the timer with the loaded duration
                 } else {
                     document.getElementById("timer").innerHTML = "Expired"; // If time has expired
