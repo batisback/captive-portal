@@ -24,6 +24,11 @@
             margin-top: 20px;
             font-size: 18px;
         }
+        #note {
+            margin-top: 20px;
+            font-size: 14px;
+            color: gray;
+        }
     </style>
 </head>
 <body>
@@ -42,6 +47,7 @@
         </div>
         <div id="timer">00:00:00</div> <!-- Changed to HH:MM:SS format -->
         <div id="durationInfo"></div> <!-- For displaying start and end times -->
+        <div id="note">This is a simple timer to keep track of time elapsed. It will start once you choose your access duration thus may not be as accurate as it depends on when the timer is started.</div>
     </div>
 
     <script>
@@ -72,6 +78,7 @@
                 localStorage.setItem('duration', duration); // Store duration in localStorage
 
                 document.getElementById("durationSelect").value = duration; // Keep the selected value in the drop-down
+                document.getElementById("durationSelect").disabled = true; // Disable dropdown
                 displayDurationInfo(startTime, endTime); // Display start and end times
                 startTimer(); // Start the timer
             }
@@ -89,6 +96,7 @@
                     localStorage.removeItem('duration'); // Clear duration from localStorage when expired
                     localStorage.removeItem('startTime'); // Clear start time from localStorage
                     localStorage.removeItem('endTime'); // Clear end time from localStorage
+                    document.getElementById("durationSelect").disabled = false; // Re-enable dropdown
                 } else {
                     document.getElementById("timer").innerHTML = formatTime(timeLeft);
                 }
@@ -120,11 +128,13 @@
                 timeLeft = Math.max(0, Math.floor((endTime.getTime() - Date.now()) / 1000)); // Calculate remaining time
                 document.getElementById("timer").innerHTML = formatTime(timeLeft);
                 document.getElementById("durationSelect").value = storedDuration; // Keep the selected value in the drop-down
+                document.getElementById("durationSelect").disabled = true; // Disable dropdown
                 displayDurationInfo(startTime, endTime); // Display stored start and end times
                 if (timeLeft > 0) {
                     startTimer(); // Start the timer with the loaded duration
                 } else {
                     document.getElementById("timer").innerHTML = "Expired"; // If time has expired
+                    document.getElementById("durationSelect").disabled = false; // Re-enable dropdown
                 }
             }
         }
