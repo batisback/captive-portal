@@ -41,6 +41,7 @@
 
     <script>
         let timeLeft = 0; // Initialize timeLeft
+        let interval; // Declare interval variable
 
         // Function to format the time as HH:MM:SS
         function formatTime(seconds) {
@@ -53,24 +54,40 @@
         // Function to set the duration based on user choice
         function setDuration(duration) {
             timeLeft = duration; // Set timeLeft based on user's choice
-            document.getElementById("timer").innerHTML = formatTime(timeLeft);
+            localStorage.setItem('duration', duration); // Store duration in localStorage
             startTimer(); // Start the timer
         }
 
         // Function to start the countdown timer
         function startTimer() {
-            clearInterval(); // Clear any existing timer
-            const interval = setInterval(() => {
-                timeLeft--;
+            clearInterval(interval); // Clear any existing timer
+            const endTime = Date.now() + timeLeft * 1000; // Calculate end time
 
-                if (timeLeft < 0) {
+            interval = setInterval(() => {
+                timeLeft = Math.max(0, Math.floor((endTime - Date.now()) / 1000)); // Calculate remaining time
+
+                if (timeLeft <= 0) {
                     document.getElementById("timer").innerHTML = "Expired";
                     clearInterval(interval);
+                    localStorage.removeItem('duration'); // Clear duration from localStorage when expired
                 } else {
                     document.getElementById("timer").innerHTML = formatTime(timeLeft);
                 }
             }, 1000);
         }
+
+        // Function to load the timer state from localStorage
+        function loadTimer() {
+            const storedDuration = localStorage.getItem('duration');
+            if (storedDuration) {
+                timeLeft = parseInt(storedDuration, 10); // Retrieve and parse the stored duration
+                document.getElementById("timer").innerHTML = formatTime(timeLeft);
+                startTimer(); // Start the timer with the loaded duration
+            }
+        }
+
+        // Load the timer state when the page loads
+        window.onload = loadTimer;
     </script>
 </body>
 </html>
